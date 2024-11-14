@@ -4,6 +4,7 @@ import viteLogo from '/vite.svg';
 import './App.css';
 import NavigationBar from './components/NavigationBar';
 import MainPage from './pages/MainPage';
+import MapWithTileset from './components/MapWithTileset';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 const router = createBrowserRouter([
@@ -12,6 +13,7 @@ const router = createBrowserRouter([
     element: <NavigationBar />, // 기본 레이아웃
     children: [
       { path: "/", element: <MainPage /> }, // 오타 수정
+      { path: "/mapbox", element: <MapWithTileset /> }, // 오타 
     ]
   }
 ]);
