@@ -12,8 +12,8 @@ const router = createBrowserRouter([
     path: "/", // 오타 수정
     element: <NavigationBar />, // 기본 레이아웃
     children: [
-      { path: "/", element: <MainPage /> }, // 오타 수정
-      { path: "/mapbox", element: <MapWithTileset /> }, // 오타 
+      { path: "/", element: <MapWithTileset /> }, // 오타 수정
+      // { path: "/mapbox", element: <MapWithTileset /> }, // 오타 
     ]
   }
 ]);
