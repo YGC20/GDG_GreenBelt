@@ -8,7 +8,7 @@ function Modal({ isOpen, onClose, children }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96 max-h-[90vh] overflow-y-auto relative">
+      <div className="bg-white p-6 rounded-lg w-96 overflow-y-auto relative">
         <button
           onClick={onClose}
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl"
@@ -88,19 +88,19 @@ function MapWithTileset() {
   return (
     <>
       <MapGL
-        initialViewState={{
-          latitude: 36.5,
-          longitude: 127.5,
-          zoom: 7,
-        }}
-        style={{ width: "100%", height: "100vh" }}
-        mapStyle="mapbox://styles/dudadido/cm3h2etw0006801r7hjpc83w0"
-        mapboxAccessToken={MAPBOX_TOKEN}
-        interactiveLayerIds={["grid-layer", "mountain-layer"]}
-        onLoad={handleMapLoad}
-        onClick={handleClick}
-        className="w-full h-screen"
-      >
+  initialViewState={{
+    latitude: 36.5,
+    longitude: 127.5,
+    zoom: 7,
+  }}
+  style={{ width: "100%", height: "100vh" }}  // 높이를 화면 전체로 설정
+  mapStyle="mapbox://styles/dudadido/cm3h2etw0006801r7hjpc83w0"
+  mapboxAccessToken={MAPBOX_TOKEN}
+  interactiveLayerIds={["grid-layer", "mountain-layer"]}
+  onLoad={handleMapLoad}
+  onClick={handleClick}
+  className="w-full h-full"
+>
         {mapLoaded && (
           <>
             {/* 탄소 배출 레이어 */}
@@ -111,7 +111,7 @@ function MapWithTileset() {
                 source-layer="realrealfinal-3gve1p"
                 paint={{
                   "fill-color": "#888",
-                  "fill-opacity": 0.4,
+                  "fill-opacity": 0,
                 }}
               />
             </Source>
@@ -149,14 +149,29 @@ function MapWithTileset() {
       <Modal isOpen={!!modalInfo} onClose={() => { setModalInfo(null); setLocationInfo(null); }}>
         {modalInfo && (
           <div>
-            <p className="text-gray-700">탄소 배출량: {modalInfo.emissions}</p>
-            <p className="text-gray-700">탄소 흡수량: {modalInfo.absorption}</p>
-            <p className="text-gray-700">총 탄소량: {modalInfo.total}</p>
-            <p className="text-gray-700">녹지화 가능 면적: {modalInfo.area}</p>
-            <p className="text-gray-700">위도: {modalInfo.latitude}</p>
-            <p className="text-gray-700">경도: {modalInfo.longitude}</p>
             {locationInfo && (
-              <p className="text-gray-700">위치: {locationInfo.fullAddress}</p>
+              <h2 className="text-gray-700 text-2xl">{locationInfo.fullAddress}</h2>
+            )}
+      <p className="text-gray-700">탄소 배출량: {Math.round(modalInfo.emissions)}</p>
+      <p className="text-gray-700">탄소 흡수량: {Math.round(modalInfo.absorption)}</p>
+      <p className="text-gray-700">총 탄소량: {Math.round(modalInfo.total)}</p>
+            <p className="text-gray-700">녹지화 가능 면적: {modalInfo.area}</p>
+
+            {/* 조건부 렌더링 */}
+            {modalInfo.area > 0 && modalInfo.total >= 200000 && (
+              <p>녹지화가 시급합니다. 건물이 많을 것으로 예상되니 건물 녹지화를 추천드립니다.</p>
+            )}
+            
+            {modalInfo.absorption === 0 && modalInfo.area > 0 && (
+              <p>탄소 흡수량이 0입니다. 녹지화를 통해 탄소 흡수를 늘리시길 추천드립니다.</p>
+            )}
+
+            {modalInfo.absorption < 150 && modalInfo.area > 100 && (
+              <p>탄소 흡수량은 낮지만 면적이 넓습니다. 탄소 흡수량 증가를 위한 조치가 필요합니다.</p>
+            )}
+
+            {modalInfo.total <= 0 && (
+              <p>탄소 관리가 잘 되고 있는 지역입니다!</p>
             )}
           </div>
         )}
