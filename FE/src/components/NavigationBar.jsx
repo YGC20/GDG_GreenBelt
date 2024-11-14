@@ -1,5 +1,6 @@
 // NavigationBar.js
 import { Link, Outlet, useLocation } from "react-router-dom";
+import logo from "../../public/logo.png"; // 로고 이미지 경로
 
 export default function NavigationBar() {
   const location = useLocation();
@@ -13,7 +14,9 @@ export default function NavigationBar() {
   return (
     <div>
       <div className="border-b-2 h-[8vh] min-h-[75px] flex justify-between items-center px-5">
-        <Link to="/">로고</Link>
+        <Link to="/">
+          <img src={logo} alt="로고" className="h-[50px] w-auto" /> {/* 로고 이미지 */}
+        </Link>
         <div className="flex justify-center items-center gap-20">
           <Link to="/" className={linkStyles("/")}>
             선택 1

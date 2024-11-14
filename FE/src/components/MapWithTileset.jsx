@@ -1,14 +1,15 @@
-const MAPBOX_TOKEN = "pk.eyJ1IjoiZHVkYWRpZG8iLCJhIjoiY20zaDI2aXp5MGI1YTJscHQyMHF3cWVmNSJ9.h0rrQrjgno24QZjnIZx3Tw";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import MapGL, { Source, Layer } from "react-map-gl";
 import * as turf from "@turf/turf";
+import "mapbox-gl/dist/mapbox-gl.css";
+const MAPBOX_TOKEN = "pk.eyJ1IjoiZHVkYWRpZG8iLCJhIjoiY20zaDI2aXp5MGI1YTJscHQyMHF3cWVmNSJ9.h0rrQrjgno24QZjnIZx3Tw";
 
 function Modal({ isOpen, onClose, children }) {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96 overflow-y-auto relative">
+      <div className="bg-white p-6 rounded-lg w-128 overflow-y-auto relative">
         <button
           onClick={onClose}
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl"
@@ -22,10 +23,12 @@ function Modal({ isOpen, onClose, children }) {
 }
 
 function MapWithTileset() {
-  const [mapLoaded, setMapLoaded] = useState(false); // 맵 로드 상태 추가
+  const [mapLoaded, setMapLoaded] = useState(false);
   const [modalInfo, setModalInfo] = useState(null);
   const [locationInfo, setLocationInfo] = useState(null);
   const [overlapArea, setOverlapArea] = useState(null);
+
+  const mapRef = useRef(null); // MapGL 인스턴스를 참조
 
   useEffect(() => {
     if (modalInfo && modalInfo.latitude && modalInfo.longitude) {
@@ -85,22 +88,30 @@ function MapWithTileset() {
     [mapLoaded]
   );
 
+  useEffect(() => {
+    // MapGL 인스턴스가 로드되고 나면 resize 호출
+    if (mapRef.current && mapLoaded) {
+      mapRef.current.resize();
+    }
+  }, [mapLoaded]);
+
   return (
     <>
       <MapGL
-  initialViewState={{
-    latitude: 36.5,
-    longitude: 127.5,
-    zoom: 7,
-  }}
-  style={{ width: "100%", height: "100vh" }}  // 높이를 화면 전체로 설정
-  mapStyle="mapbox://styles/dudadido/cm3h2etw0006801r7hjpc83w0"
-  mapboxAccessToken={MAPBOX_TOKEN}
-  interactiveLayerIds={["grid-layer", "mountain-layer"]}
-  onLoad={handleMapLoad}
-  onClick={handleClick}
-  className="w-full h-full"
->
+        initialViewState={{
+          latitude: 36.5,
+          longitude: 127.5,
+          zoom: 7,
+        }}
+        style={{ width: "100%", height: "82vh" }}
+        mapStyle="mapbox://styles/dudadido/cm3h2etw0006801r7hjpc83w0"
+        mapboxAccessToken={MAPBOX_TOKEN}
+        interactiveLayerIds={["grid-layer", "mountain-layer"]}
+        onLoad={handleMapLoad}
+        onClick={handleClick}
+        className="w-full h-full"
+        ref={mapRef} // ref 추가
+      >
         {mapLoaded && (
           <>
             {/* 탄소 배출 레이어 */}
@@ -152,16 +163,16 @@ function MapWithTileset() {
             {locationInfo && (
               <h2 className="text-gray-700 text-2xl">{locationInfo.fullAddress}</h2>
             )}
-      <p className="text-gray-700">탄소 배출량: {Math.round(modalInfo.emissions)}</p>
-      <p className="text-gray-700">탄소 흡수량: {Math.round(modalInfo.absorption)}</p>
-      <p className="text-gray-700">총 탄소량: {Math.round(modalInfo.total)}</p>
+            <p className="text-gray-700">탄소 배출량: {Math.round(modalInfo.emissions)}</p>
+            <p className="text-gray-700">탄소 흡수량: {Math.round(modalInfo.absorption)}</p>
+            <p className="text-gray-700">총 탄소량: {Math.round(modalInfo.total)}</p>
             <p className="text-gray-700">녹지화 가능 면적: {modalInfo.area}</p>
 
             {/* 조건부 렌더링 */}
             {modalInfo.area > 0 && modalInfo.total >= 200000 && (
               <p>녹지화가 시급합니다. 건물이 많을 것으로 예상되니 건물 녹지화를 추천드립니다.</p>
             )}
-            
+
             {modalInfo.absorption === 0 && modalInfo.area > 0 && (
               <p>탄소 흡수량이 0입니다. 녹지화를 통해 탄소 흡수를 늘리시길 추천드립니다.</p>
             )}
