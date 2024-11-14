@@ -27,6 +27,32 @@ function MapWithTileset() {
   const [locationInfo, setLocationInfo] = useState(null);
   const [overlapArea, setOverlapArea] = useState(null);
 
+  useEffect(() => {
+    if (modalInfo && modalInfo.latitude && modalInfo.longitude) {
+      fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${modalInfo.longitude},${modalInfo.latitude}.json?access_token=${MAPBOX_TOKEN}&language=ko`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          const region = data.features.find((feature) => feature.place_type.includes("region"));
+          const district = data.features.find((feature) => feature.place_type.includes("district")) || data.features.find((feature) => feature.place_type.includes("locality"));
+          const suburb = data.features.find((feature) => feature.place_type.includes("neighborhood"));
+          const place = data.features.find((feature) => feature.place_type.includes("place"));
+
+          const isSpecialCity = region && ["서울특별시", "부산광역시", "대구광역시", "인천광역시", "광주광역시", "대전광역시", "울산광역시", "세종특별자치시"].includes(region.text);
+
+          const fullAddress = isSpecialCity
+            ? `${region.text} ${district ? district.text : ""} ${suburb ? suburb.text : ""}`.trim() // 광역시/특별시일 경우 district와 suburb를 포함
+            : `${region ? region.text : ""} ${place ? place.text : ""} ${suburb ? suburb.text : ""}`.trim(); // 일반 도/시일 경우 region, place, suburb 조합
+
+          setLocationInfo({
+            fullAddress: fullAddress,
+          });
+        })
+        .catch((error) => console.error("Geocoding error:", error));
+    }
+  }, [modalInfo]);
+
   const handleMapLoad = useCallback((event) => {
     setMapLoaded(event.target.isStyleLoaded()); // 스타일 로드 완료 여부 확인
   }, []);
