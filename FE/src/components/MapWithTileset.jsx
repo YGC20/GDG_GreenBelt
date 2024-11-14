@@ -1,6 +1,7 @@
 const MAPBOX_TOKEN = "pk.eyJ1IjoiZHVkYWRpZG8iLCJhIjoiY20zaDI2aXp5MGI1YTJscHQyMHF3cWVmNSJ9.h0rrQrjgno24QZjnIZx3Tw";
 import React, { useState, useCallback, useEffect } from "react";
 import MapGL, { Source, Layer } from "react-map-gl";
+import * as turf from "@turf/turf";
 
 
 function Modal({ isOpen, onClose, children }) {
@@ -24,6 +25,7 @@ function Modal({ isOpen, onClose, children }) {
 function MapWithTileset() {
   const [modalInfo, setModalInfo] = useState(null);
   const [locationInfo, setLocationInfo] = useState(null);
+  const [overlapArea, setOverlapArea] = useState(null);
 
   useEffect(() => {
     if (modalInfo && modalInfo.latitude && modalInfo.longitude) {
@@ -40,8 +42,8 @@ function MapWithTileset() {
           const isSpecialCity = region && ["서울특별시", "부산광역시", "대구광역시", "인천광역시", "광주광역시", "대전광역시", "울산광역시", "세종특별자치시"].includes(region.text);
 
           const fullAddress = isSpecialCity
-            ? `${region.text} ${district ? district.text : ""} ${suburb ? suburb.text : ""}`.trim() // 광역시/특별시일 경우 district와 suburb를 포함
-            : `${region ? region.text : ""} ${place ? place.text : ""} ${suburb ? suburb.text : ""}`.trim(); // 일반 도/시일 경우 region, place, suburb 조합
+            ? `${region.text} ${district ? district.text : ""} ${suburb ? suburb.text : ""}`.trim()
+            : `${region ? region.text : ""} ${place ? place.text : ""} ${suburb ? suburb.text : ""}`.trim();
 
           setLocationInfo({
             fullAddress: fullAddress,
@@ -60,6 +62,17 @@ function MapWithTileset() {
         latitude: properties.latitude,
         longitude: properties.longitude,
       });
+
+      // 산과 탄소 배출 영역 겹치는 부분 계산
+      const mountainPolygon = turf.polygon([/* 산의 경계 좌표 배열 */]);
+      const carbonPolygon = turf.polygon([/* 탄소 배출 구역 경계 좌표 배열 */]);
+      const intersectedArea = turf.intersect(mountainPolygon, carbonPolygon);
+
+      if (intersectedArea) {
+        setOverlapArea(intersectedArea); // 겹치는 영역 상태 업데이트
+      } else {
+        setOverlapArea(null);
+      }
     }
   }, []);
 
@@ -74,10 +87,11 @@ function MapWithTileset() {
         style={{ width: "100%", height: "100vh" }}
         mapStyle="mapbox://styles/dudadido/cm3h2etw0006801r7hjpc83w0"
         mapboxAccessToken={MAPBOX_TOKEN}
-        interactiveLayerIds={["grid-layer"]}
+        interactiveLayerIds={["grid-layer", "mountain-layer"]} // 상호작용 가능한 레이어 ID 추가
         onClick={handleClick}
         className="w-full h-screen"
       >
+        {/* 탄소 배출 레이어 */}
         <Source
           id="grid-data"
           type="vector"
@@ -93,6 +107,37 @@ function MapWithTileset() {
             }}
           />
         </Source>
+
+        {/* 산 레이어 */}
+        <Source
+          id="mountain-data"
+          type="vector"
+          url="mapbox://styles/dudadido/cm3h2etw0006801r7hjpc83w0" // Mapbox에 업로드된 산 타일셋 ID
+        >
+          <Layer
+            id="mountain-layer"
+            type="fill"
+            source-layer="hillshade" // Mapbox Studio에서 지정된 source-layer 이름
+            paint={{
+              "fill-color": "#228B22",
+              "fill-opacity": 0.4,
+            }}
+          />
+        </Source>
+
+        {/* 겹치는 영역을 Mapbox에 추가 */}
+        {overlapArea && (
+          <Source id="overlap-area" type="geojson" data={overlapArea}>
+            <Layer
+              id="overlap-layer"
+              type="fill"
+              paint={{
+                "fill-color": "#FF0000", // 겹치는 영역의 색상
+                "fill-opacity": 0.5,
+              }}
+            />
+          </Source>
+        )}
       </MapGL>
 
       <Modal isOpen={!!modalInfo} onClose={() => { setModalInfo(null); setLocationInfo(null); }}>
@@ -104,7 +149,6 @@ function MapWithTileset() {
             <p className="text-gray-700">총 탄소량: {modalInfo.total}</p>
             <p className="text-gray-700">위도: {modalInfo.latitude}</p>
             <p className="text-gray-700">경도: {modalInfo.longitude}</p>
-            {console.log(modalInfo)}
             {locationInfo && (
               <p className="text-gray-700">위치: {locationInfo.fullAddress}</p>
             )}
