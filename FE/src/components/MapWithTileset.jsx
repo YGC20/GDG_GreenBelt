@@ -104,11 +104,11 @@ function MapWithTileset() {
         {mapLoaded && (
           <>
             {/* 탄소 배출 레이어 */}
-            <Source id="grid-data" type="vector" url="mapbox://dudadido.2myu2e5y">
+            <Source id="grid-data" type="vector" url="mapbox://dudadido.0avn7c0j">
               <Layer
                 id="grid-layer"
                 type="fill"
-                source-layer="ver4-6q70fi"
+                source-layer="realrealfinal-3gve1p"
                 paint={{
                   "fill-color": "#888",
                   "fill-opacity": 0.4,
@@ -149,10 +149,10 @@ function MapWithTileset() {
       <Modal isOpen={!!modalInfo} onClose={() => { setModalInfo(null); setLocationInfo(null); }}>
         {modalInfo && (
           <div>
-            <h4 className="text-lg font-bold mb-2">격자 코드: {modalInfo.grid_cd}</h4>
             <p className="text-gray-700">탄소 배출량: {modalInfo.emissions}</p>
             <p className="text-gray-700">탄소 흡수량: {modalInfo.absorption}</p>
             <p className="text-gray-700">총 탄소량: {modalInfo.total}</p>
+            <p className="text-gray-700">녹지화 가능 면적: {modalInfo.area}</p>
             <p className="text-gray-700">위도: {modalInfo.latitude}</p>
             <p className="text-gray-700">경도: {modalInfo.longitude}</p>
             {locationInfo && (
