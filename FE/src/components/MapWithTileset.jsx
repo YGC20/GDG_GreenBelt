@@ -85,6 +85,55 @@ function MapWithTileset() {
     [mapLoaded]
   );
 
+  const getEmissionGrade = (emissions) => {
+    if (emissions <= 10000) {
+      return "1단계: 매우 안전";
+    } else if (emissions <= 75000) {
+      return "2단계: 안전";
+    } else if (emissions <= 150000) {
+      return "3단계: 주의";
+    } else if (emissions <= 230000) {
+      return "4단계: 위험";
+    } else {
+      return "5단계: 매우 위험";
+    }
+  };
+
+  const getRequiredGreenArea = (emissions) => {
+    let reductionNeeded;
+    if (emissions <= 10000) {
+      return null;
+    } else if (emissions <= 75000) {
+      reductionNeeded = emissions - 10000;
+    } else if (emissions <= 150000) {
+      reductionNeeded = emissions - 75000;
+    } else if (emissions <= 230000) {
+      reductionNeeded = emissions - 150000;
+    } else {
+      reductionNeeded = emissions - 230000;
+    }
+
+    const greenTypes = [
+      { type: "산림 (성숙한 나무)", absorption: 12.5 },
+      { type: "도시 숲", absorption: 4 },
+      { type: "가로수", absorption: 0.35 },
+      { type: "초지 (잔디밭)", absorption: 0.75 },
+      { type: "하천변 녹지", absorption: 2.5 },
+      { type: "옥상 녹화", absorption: 0.2 },
+      { type: "식물 벽", absorption: 0.075 },
+      { type: "소규모 공원", absorption: 2 },
+    ];
+
+    let requiredAreas = greenTypes.map((green) => {
+      return {
+        type: green.type,
+        area: (reductionNeeded / green.absorption).toFixed(2),
+      };
+    });
+
+    return requiredAreas;
+  };
+
   return (
     <>
       <MapGL
@@ -155,8 +204,21 @@ function MapWithTileset() {
             <p className="text-gray-700">총 탄소량: {modalInfo.total}</p>
             <p className="text-gray-700">위도: {modalInfo.latitude}</p>
             <p className="text-gray-700">경도: {modalInfo.longitude}</p>
+            <p className="text-gray-700">탄소 배출 등급: {getEmissionGrade(modalInfo.emissions)}</p>
             {locationInfo && (
               <p className="text-gray-700">위치: {locationInfo.fullAddress}</p>
+            )}
+            {getEmissionGrade(modalInfo.emissions) !== "1단계: 매우 안전" && (
+              <div className="mt-4">
+                <h5 className="text-md font-bold mb-2">필요한 녹지 구성 및 면적:</h5>
+                <ul className="list-disc list-inside">
+                  {getRequiredGreenArea(modalInfo.emissions).map((green, index) => (
+                    <li key={index} className="text-gray-700">
+                      {green.type}: {green.area} m²
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         )}
