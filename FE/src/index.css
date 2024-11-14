@@ -1,3 +1,45 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* CSS에서 @font-face 규칙 정의 */
+@font-face {
+  font-family: "Pretendard";
+  src: url("./Fonts/Pretendard-Thin.woff2") format("woff2");
+  font-weight: 100; /* Thin */
+}
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("./Fonts/Pretendard-Light.woff2") format("woff2");
+  font-weight: 300; /* Light */
+}
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("./Fonts/Pretendard-Regular.woff2") format("woff2");
+  font-weight: 400; /* Regular */
+}
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("./Fonts/Pretendard-Medium.woff2") format("woff2");
+  font-weight: 500; /* Medium */
+}
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("./Fonts/Pretendard-Bold.woff2") format("woff2");
+  font-weight: 700; /* Bold */
+}
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("./Fonts/Pretendard-ExtraBold.woff2") format("woff2");
+  font-weight: 800; /* ExtraBold */
+}
+
+/* 기본 글꼴로 Pretendard 설정 */
+body {
+  font-family: "Pretendard", sans-serif;
+}
