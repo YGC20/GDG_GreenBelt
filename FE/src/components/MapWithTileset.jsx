@@ -158,35 +158,73 @@ function MapWithTileset() {
       </MapGL>
 
       <Modal isOpen={!!modalInfo} onClose={() => { setModalInfo(null); setLocationInfo(null); }}>
-        {modalInfo && (
-          <div>
-            {locationInfo && (
-              <h2 className="text-gray-700 text-2xl">{locationInfo.fullAddress}</h2>
-            )}
-            <p className="text-gray-700">탄소 배출량: {Math.round(modalInfo.emissions)}</p>
-            <p className="text-gray-700">탄소 흡수량: {Math.round(modalInfo.absorption)}</p>
-            <p className="text-gray-700">총 탄소량: {Math.round(modalInfo.total)}</p>
-            <p className="text-gray-700">녹지화 가능 면적: {modalInfo.area}</p>
+  {modalInfo && (
+    <div>
+      {locationInfo && (
+        <h2 className="text-gray-700 text-2xl font-bold">{locationInfo.fullAddress}</h2>
+      )}
+       {/* 상태별 조건부 렌더링 */}
+       {modalInfo.total > 300000 && (
+        <div>
+          <p className="text-xl font-bold">비상 상태입니다. 즉각적인 조치가 필요합니다!</p>
+          {/* 산림 면적 계산 */}
+          <p>산림 면적 필요: {(modalInfo.total / 1.5 - 200000 / 1.5).toFixed(2)} m²</p> {/* 300,000 -> 200,000으로 줄이기 위한 면적 */}
+          <p>설명: 성숙한 나무들로 구성된 산림 지역입니다.</p>
+        </div>
+      )}
 
-            {/* 조건부 렌더링 */}
-            {modalInfo.area > 0 && modalInfo.total >= 200000 && (
-              <p>녹지화가 시급합니다. 건물이 많을 것으로 예상되니 건물 녹지화를 추천드립니다.</p>
-            )}
+      {modalInfo.total > 200000 && modalInfo.total <= 300000 && (
+        <div>
+          <p className="text-xl font-bold">매우 위험한 상태입니다. 빠른 조치가 필요합니다.</p>
+          {/* 산림 면적 계산 */}
+          <p>산림 면적 필요: {(modalInfo.total / 1.5 - 100000 / 1.5).toFixed(2)} m²</p> {/* 200,000 -> 100,000으로 줄이기 위한 면적 */}
+          <p>설명: 성숙한 나무들로 구성된 산림 지역입니다.</p>
+        </div>
+      )}
 
-            {modalInfo.absorption === 0 && modalInfo.area > 0 && (
-              <p>탄소 흡수량이 0입니다. 녹지화를 통해 탄소 흡수를 늘리시길 추천드립니다.</p>
-            )}
+      {modalInfo.total > 100000 && modalInfo.total <= 200000 && (
+        <div>
+          <p className="text-xl font-bold">위험한 상태입니다. 추가적인 관리가 필요합니다.</p>
+          {/* 산림 면적 계산 */}
+          <p>산림 면적 필요: {(modalInfo.total / 1.5 - 10000 / 1.5).toFixed(2)} m²</p> {/* 200,000 -> 10,000으로 줄이기 위한 면적 */}
+          <p>설명: 성숙한 나무들로 구성된 산림 지역입니다.</p>
+        </div>
+      )}
 
-            {modalInfo.absorption < 150 && modalInfo.area > 100 && (
-              <p>탄소 흡수량은 낮지만 면적이 넓습니다. 탄소 흡수량 증가를 위한 조치가 필요합니다.</p>
-            )}
+      {modalInfo.total <= 10000 && (
+        <div>
+          <p className="text-xl font-bold">쾌적한 상태입니다. 추가적인 조치가 필요하지 않습니다.</p>
+          {/* 산림 면적 계산 */}
+          <p>산림 면적 필요: {(modalInfo.total / 1.5).toFixed(2)} m²</p> {/* 기본적인 계산 */}
+          <p>설명: 성숙한 나무들로 구성된 산림 지역입니다.</p>
+        </div>
+      )}
+      <p className="text-gray-700">탄소 배출량: {Math.round(modalInfo.emissions)}</p>
+      <p className="text-gray-700">탄소 흡수량: {Math.round(modalInfo.absorption)}</p>
+      <p className="text-gray-700">총 탄소량: {Math.round(modalInfo.total)}</p>
+      <p className="text-gray-700">녹지화 가능 면적: {modalInfo.area}</p>
 
-            {modalInfo.total <= 0 && (
-              <p>탄소 관리가 잘 되고 있는 지역입니다!</p>
-            )}
-          </div>
-        )}
-      </Modal>
+     
+
+      {/* 기존 조건부 렌더링 */}
+      {modalInfo.area > 0 && modalInfo.total >= 200000 && (
+        <p>녹지화가 시급합니다. 건물이 많을 것으로 예상되니 건물 녹지화를 추천드립니다.</p>
+      )}
+
+      {modalInfo.absorption === 0 && modalInfo.area > 0 && (
+        <p>탄소 흡수량이 0입니다. 녹지화를 통해 탄소 흡수를 늘리시길 추천드립니다.</p>
+      )}
+
+      {modalInfo.absorption < 150 && modalInfo.area > 100 && (
+        <p>탄소 흡수량은 낮지만 면적이 넓습니다. 탄소 흡수량 증가를 위한 조치가 필요합니다.</p>
+      )}
+
+      {modalInfo.total <= 0 && (
+        <p>탄소 관리가 잘 되고 있는 지역입니다!</p>
+      )}
+    </div>
+  )}
+</Modal>
     </>
   );
 }
